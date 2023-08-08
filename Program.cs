@@ -2,6 +2,43 @@ using rare.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+List<Subscriptions> subscriptions = new List<Subscriptions>
+{
+    new Subscriptions()
+    {
+        Id = 1,
+        FollowerId = 1,
+        AuthorId = 1,
+        CreatedOn = DateTime.Now,
+    },
+
+    new Subscriptions()
+    {
+        Id = 2,
+        FollowerId = 2,
+        AuthorId = 2,
+        CreatedOn = DateTime.Today.AddMonths(-6)
+    },
+
+    new Subscriptions()
+    {
+        Id = 3,
+        FollowerId = 3,
+        AuthorId = 3,
+        CreatedOn = DateTime.Today.AddMonths(-3)
+    },
+
+    new Subscriptions()
+    {
+        Id = 4,
+        FollowerId = 4,
+        AuthorId = 4,
+        CreatedOn= DateTime.Today.AddYears(-2)
+    }
+};
+
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -63,53 +100,33 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// api calls for Post
-app.MapGet("/posts", () => 
+// SUBSCRIPTIONS ENDPOINTS
+
+app.MapPost("/subscriptions", (Subscriptions subscription) =>
 {
-    return posts;
+    subscription.Id = subscriptions.Max(subs => subs.Id) + 1;
+    subscriptions.Add(subscription);
+    return subscription;
 });
 
-app.MapPut("/posts/{id}", (int id, Posts post) => 
+
+app.MapGet("/subscriptions", () =>
 {
-    Posts postToUpdate = posts.FirstOrDefault(post => post.Id == id);
-    int postIndex = posts.IndexOf(postToUpdate);
-    if ( postToUpdate == null) 
-    {
-        return Results.NotFound();
-    }
-
-    if( id != post.Id ) 
-    {
-        return Results.BadRequest();
-    }
-
-    posts[postIndex] = post;
-    return Results.Ok();
+    return subscriptions;
 });
 
-app.MapDelete("/posts/{id}", (int id) => 
+
+app.MapDelete("/subscriptions/{id}", (int id) =>
 {
-    Posts postToDelete = posts.FirstOrDefault(pt => pt.Id == id);
-    if (postToDelete == null) 
-    {
-        return Results.NotFound();
-    }
-
-    posts.Remove(postToDelete);
-    return Results.Ok();
-
+    Subscriptions subscription = subscriptions.FirstOrDefault(subs => subs.Id == id);
+    subscriptions.Remove(subscription);
+    return subscription;
 });
 
-app.MapPost("/posts", (Posts post) => 
-{
-    post.Id = posts.Max(pt => pt.Id) + 1;
-    posts.Add(post);
-    return post;
-});
 
+app.UseHttpsRedirection();
 
 
 app.UseHttpsRedirection();
 
 app.Run();
-
