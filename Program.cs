@@ -1,7 +1,5 @@
 using rare.Models;
 
-// update subscription 
-
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -48,6 +46,53 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+List<Posts> posts = new List<Posts> 
+{
+    new Posts()
+    {
+        Id = 1,
+        UserId = 1,
+        CategoryId = 1,
+        title = "New haircut",
+        PublicationDate = DateTime.Now,
+        Content = "Got a new haircut today. Looking fresh and clean",
+        Approved = true,
+    },
+
+    new Posts() 
+    {
+        Id = 2,
+        UserId = 2,
+        CategoryId = 2,
+        title = "Sexiest accent",
+        PublicationDate = DateTime.Now,
+        Content = "Naughty naughty. You tease me.",
+        Approved = false
+    },
+
+    new Posts() 
+    {
+        Id = 3,
+        UserId = 3,
+        CategoryId = 3,
+        title = "What Cheez-It falvor is the best?",
+        PublicationDate = DateTime.Now,
+        Content = "Hot & Spicy is the best because my name is Kyle, and I am never wrong.",
+        Approved = true
+    },
+
+    new Posts() 
+    {
+        Id = 4,
+        UserId = 4,
+        CategoryId = 4,
+        title = "Coffee",
+        PublicationDate = DateTime.Now,
+        Content = "Do you like your coffee black, or with cream and sugar?",
+        Approved = true
+    }
+};
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -82,5 +127,6 @@ app.MapDelete("/subscriptions/{id}", (int id) =>
 app.UseHttpsRedirection();
 
 
+app.UseHttpsRedirection();
 
 app.Run();
