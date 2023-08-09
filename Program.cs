@@ -40,6 +40,7 @@ List<Comments> comments = new List<Comments>
     }
 };
 
+List<Posts> posts = new List<Posts> 
 List<Categories> categories = new List<Categories>
 {
     new Categories()
@@ -73,6 +74,12 @@ List<Categories> categories = new List<Categories>
         Label = "TV"
     }
 };
+// Add services to the container.
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
 
 var builder = WebApplication.CreateBuilder(args);
 
