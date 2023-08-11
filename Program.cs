@@ -1,6 +1,4 @@
-using rare.Models;
-
-List<Comments> comments = new List<Comments>
+﻿List<Comments> comments = new List<Comments>
 {
     new Comments()
     {
@@ -209,6 +207,35 @@ List<Posts> posts = new List<Posts>
         PublicationDate = DateTime.Now,
         Content = "Do you like your coffee black, or with cream and sugar?",
         Approved = true
+    }
+};
+
+List<Reactions> reactions = new()
+{
+    new Reactions()
+    {
+        Id = 1,
+        emoji = "👍"
+    },
+    new Reactions()
+    {
+        Id = 2,
+        emoji =  "👎"
+    },
+    new Reactions()
+    {
+        Id = 3,
+        emoji = "👏"
+    },
+    new Reactions()
+    {
+        Id = 4,
+        emoji = "💖"
+    },
+    new Reactions()
+    {
+        Id = 5,
+        emoji = "\U0001f7e7"
     }
 };
 
@@ -524,5 +551,22 @@ app.MapDelete("/comments/{id}", (int id) =>
     return Results.Ok(comment);
 });
 
+
+app.MapGet("/reactions", () =>
+{
+    return reactions;
+});
+
+app.MapGet("/reactions/{id}", (int id) =>
+{
+    Reactions reaction = reactions.FirstOrDefault(r => r.Id == id);
+
+    if (reaction == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(reaction);
+});
 
 app.Run();
