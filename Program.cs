@@ -371,7 +371,7 @@ app.MapGet("posts/{id}/comments", (int id) =>
     return assignedComments;
 });
 
-app.MapPut("/posts/{id}", (int id, Posts post
+app.MapPut("/posts/{id}", (int id, Posts post) =>
 {
     Posts postToUpdate = posts.FirstOrDefault(post => post.Id == id);
     int postIndex = posts.IndexOf(postToUpdate);
@@ -715,7 +715,7 @@ app.MapDelete("/tags/{id}", (int id) =>
     }
     tags.Remove(tag);
     return Results.Ok(tag);
-}};
+});
 
 app.MapGet("/reactions", () =>
 {
