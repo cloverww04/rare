@@ -1,4 +1,5 @@
-﻿using rare.Models;
+using rare.Models;
+
 
 List<Comments> comments = new List<Comments>
 {
@@ -72,10 +73,6 @@ List<Categories> categories = new List<Categories>
         Label = "TV"
     }
 };
-
-
-var builder = WebApplication.CreateBuilder(args);
-
 
 List<Subscriptions> subscriptions = new List<Subscriptions>
 {
@@ -212,6 +209,45 @@ List<Posts> posts = new List<Posts>
     }
 };
 
+List<Tags> tags = new List<Tags>
+{
+    new Tags()
+    {
+        Id = 1,
+        label = "Cheesy"
+    },
+
+    new Tags()
+    {
+        Id = 2,
+        label = "Slay"
+    },
+
+    new Tags()
+    {
+        Id = 3,
+        label = "Fresh"
+    },
+
+    new Tags()
+    {
+        Id = 4,
+        label = "Spicy"
+    },
+
+    new Tags()
+    {
+        Id = 5,
+        label = "Yass"
+    },
+
+    new Tags()
+    {
+        Id = 6,
+        label = "WTF"
+    },
+};
+
 List<Reactions> reactions = new()
 {
     new Reactions()
@@ -304,6 +340,7 @@ List<PostReactions> postReactions = new List<PostReactions>
 
 };
 
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -327,7 +364,14 @@ app.MapGet("/posts", () =>
     return posts;
 });
 
-app.MapPut("/posts/{id}", (int id, Posts post) =>
+app.MapGet("posts/{id}/comments", (int id) =>
+{
+    Posts post = posts.FirstOrDefault(p => p.Id == id);
+    List<Comments> assignedComments = comments.Where(c => c.PostId.Equals(id)).ToList();
+    return assignedComments;
+});
+
+app.MapPut("/posts/{id}", (int id, Posts post
 {
     Posts postToUpdate = posts.FirstOrDefault(post => post.Id == id);
     int postIndex = posts.IndexOf(postToUpdate);
@@ -526,11 +570,21 @@ app.MapPut("/users/{id}", (int id, Users user) =>
     return Results.Ok(users);
 });
 
-// Categories Endpoints
+
+// CATEGORIES ENDPOINTS
 
 app.MapGet("/catergories", () =>
+
 {
-    return categories;
+    return categories.OrderBy(c => c.Label);
+});
+
+
+app.MapGet("categories/{id}/posts", (int id) =>
+{
+    Categories category = categories.FirstOrDefault(c => c.Id == id);
+    List<Posts> assignedPosts = posts.Where(p => p.CategoryId.Equals(id)).ToList();
+    return assignedPosts;
 });
 
 
@@ -568,7 +622,18 @@ app.MapPut("/categories/{id}", (int id, Categories category) =>
     return Results.Ok();
 });
 
-// Comments Endpoints
+app.MapDelete("/categories/{id}", (int id) =>
+{
+    Categories category = categories.FirstOrDefault(c => c.Id == id);
+    if (category == null)
+    {
+        return Results.NotFound();
+    }
+    categories.Remove(category);
+    return Results.Ok(category);
+});
+
+// COMMENTS ENDPOINTS
 
 app.MapPost("/comments", (Comments comment) =>
 {
@@ -604,6 +669,53 @@ app.MapDelete("/comments/{id}", (int id) =>
     return Results.Ok(comment);
 });
 
+// TAGS ENDPOINTS
+
+app.MapGet("/tags", () =>
+{
+    return tags;
+});
+
+app.MapGet("tags/{id}/posts", (int id) =>
+{
+    Tags tag = tags.FirstOrDefault(t => t.Id == id);
+    List<Posts> assignedPosts = posts.Where(p => p.CategoryId.Equals(id)).ToList();
+    return assignedPosts;
+});
+
+app.MapPost("/tags", (Tags tag) =>
+{
+    tag.Id = tags.Max(t => t.Id) + 1;
+    tags.Add(tag);
+    return tag;
+});
+
+app.MapPut("tags/{id}", (int id, Tags tag) =>
+{
+    Tags tagToUpdate = tags.FirstOrDefault(t => t.Id == id);
+    int tagIndex = tags.IndexOf(tagToUpdate);
+    if (tagToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+    if (id != tag.Id)
+    {
+        return Results.BadRequest();
+    }
+    tags[tagIndex] = tag;
+    return Results.Ok();
+});
+
+app.MapDelete("/tags/{id}", (int id) =>
+{
+    Tags tag = tags.FirstOrDefault(t => t.Id == id);
+    if (tag == null)
+    {
+        return Results.NotFound();
+    }
+    tags.Remove(tag);
+    return Results.Ok(tag);
+}};
 
 app.MapGet("/reactions", () =>
 {
