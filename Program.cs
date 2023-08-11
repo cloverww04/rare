@@ -1,4 +1,6 @@
-﻿List<Comments> comments = new List<Comments>
+﻿using rare.Models;
+
+List<Comments> comments = new List<Comments>
 {
     new Comments()
     {
