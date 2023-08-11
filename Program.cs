@@ -1,5 +1,4 @@
-using rare.Models;
-using System.ComponentModel;
+﻿using rare.Models;
 
 List<Comments> comments = new List<Comments>
 {
@@ -166,7 +165,7 @@ List<Users> users = new List<Users>
     }
 };
 
-List<Posts> posts = new List<Posts> 
+List<Posts> posts = new List<Posts>
 {
     new Posts()
     {
@@ -179,7 +178,7 @@ List<Posts> posts = new List<Posts>
         Approved = true,
     },
 
-    new Posts() 
+    new Posts()
     {
         Id = 2,
         UserId = 2,
@@ -190,7 +189,7 @@ List<Posts> posts = new List<Posts>
         Approved = false
     },
 
-    new Posts() 
+    new Posts()
     {
         Id = 3,
         UserId = 3,
@@ -201,7 +200,7 @@ List<Posts> posts = new List<Posts>
         Approved = true
     },
 
-    new Posts() 
+    new Posts()
     {
         Id = 4,
         UserId = 4,
@@ -211,6 +210,65 @@ List<Posts> posts = new List<Posts>
         Content = "Do you like your coffee black, or with cream and sugar?",
         Approved = true
     }
+};
+
+List<Reactions> reactions = new()
+{
+    new Reactions()
+    {
+        Id = 1,
+        emoji = "👍"
+    },
+    new Reactions()
+    {
+        Id = 2,
+        emoji =  "👎"
+    },
+    new Reactions()
+    {
+        Id = 3,
+        emoji = "👏"
+    },
+    new Reactions()
+    {
+        Id = 4,
+        emoji = "💖"
+    },
+    new Reactions()
+    {
+        Id = 5,
+        emoji = "\U0001f7e7"
+    }
+};
+
+
+List<PostTags> PostTagList = new List<PostTags>
+{
+    new PostTags()
+    {
+        Id = 1,
+        TagId = 1,
+        PostId = 1
+    },
+    new PostTags()
+    {
+        Id = 2,
+        TagId = 2,
+        PostId = 2
+    },
+    new PostTags()
+    {
+        Id = 3,
+        TagId =3,
+        PostId = 3
+    },
+    new PostTags()
+    {
+        Id = 4,
+        TagId = 4,
+        PostId = 4
+    },
+
 };
 
 List<PostReactions> postReactions = new List<PostReactions>
@@ -264,21 +322,21 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // api calls for Post
-app.MapGet("/posts", () => 
+app.MapGet("/posts", () =>
 {
     return posts;
 });
 
-app.MapPut("/posts/{id}", (int id, Posts post) => 
+app.MapPut("/posts/{id}", (int id, Posts post) =>
 {
     Posts postToUpdate = posts.FirstOrDefault(post => post.Id == id);
     int postIndex = posts.IndexOf(postToUpdate);
-    if ( postToUpdate == null) 
+    if (postToUpdate == null)
     {
         return Results.NotFound();
     }
 
-    if( id != post.Id ) 
+    if (id != post.Id)
     {
         return Results.BadRequest();
     }
@@ -287,10 +345,10 @@ app.MapPut("/posts/{id}", (int id, Posts post) =>
     return Results.Ok();
 });
 
-app.MapDelete("/posts/{id}", (int id) => 
+app.MapDelete("/posts/{id}", (int id) =>
 {
     Posts postToDelete = posts.FirstOrDefault(pt => pt.Id == id);
-    if (postToDelete == null) 
+    if (postToDelete == null)
     {
         return Results.NotFound();
     }
@@ -302,11 +360,38 @@ app.MapDelete("/posts/{id}", (int id) =>
 
 });
 
-app.MapPost("/posts", (Posts post) => 
+app.MapPost("/posts", (Posts post) =>
 {
     post.Id = posts.Max(pt => pt.Id) + 1;
     posts.Add(post);
     return post;
+});
+
+// POST TAG ENDPOINTS
+
+app.MapGet("posts/{id}/postTags", (int id) =>
+{
+    Posts post = posts.FirstOrDefault(p => p.Id == id);
+    List<PostTags> assignedPostTags = PostTagList.Where(c => c.PostId.Equals(id)).ToList();
+    return assignedPostTags;
+});
+
+
+app.MapPost("/postTags", (int postId, int tagId) =>
+{
+    PostTags postTag = new PostTags
+    {
+        Id = PostTagList.Max(postTag => postTag.Id) + 1,
+        PostId = postId,
+        TagId = tagId
+    };
+});
+
+
+app.MapDelete("/posts/tags/{postTagId}", (int postTagId) =>
+{
+    PostTags postTag = PostTagList.FirstOrDefault(postTag => postTag.Id == postTagId);
+    PostTagList.Remove(postTag);
 });
 
 
@@ -332,6 +417,34 @@ app.MapDelete("/subscriptions/{id}", (int id) =>
     subscriptions.Remove(subscription);
     return subscription;
 });
+
+app.MapPost("/subscriptions/{followerId}/{authorId}", (int followerId, int authorId) =>
+{
+    Users follower = users.FirstOrDefault(u => u.Id == followerId);
+    Users author = users.FirstOrDefault(u => u.Id == authorId);
+
+    if (follower == null || author == null)
+    {
+        return Results.NotFound();
+    }
+
+    if (subscriptions.Any(sub => sub.FollowerId == followerId && sub.AuthorId == authorId))
+    {
+        return Results.Conflict();
+    }
+
+    Subscriptions newSubscription = new Subscriptions
+    {
+        Id = subscriptions.Max(sub => sub.Id) + 1,
+        FollowerId = followerId,
+        AuthorId = authorId,
+        CreatedOn = DateTime.Now
+    };
+
+    subscriptions.Add(newSubscription);
+    return Results.Created($"/subscriptions/{newSubscription.Id}", newSubscription);
+});
+
 
 // Users Endpoints:
 
@@ -410,26 +523,33 @@ app.MapPut("/users/{id}", (int id, Users user) =>
         return Results.BadRequest();
     }
     users[userIndex] = user;
-    return Results.Ok(users);  
+    return Results.Ok(users);
 });
+
+// Categories Endpoints
 
 app.MapGet("/catergories", () =>
 {
     return categories;
 });
 
-app.MapPost("/comments", (Comments comment) =>
-{
-    comment.Id = comments.Max(c => c.Id) + 1;
-    comments.Add(comment);
-    return comment;
-});
 
 app.MapPost("/categories", (Categories category) =>
 {
     category.Id = categories.Max(c => c.Id) + 1;
     categories.Add(category);
     return category;
+});
+
+app.MapDelete("/categories/{id}", (int id) =>
+{
+    Categories category = categories.FirstOrDefault(c => c.Id == id);
+    if (category == null)
+    {
+        return Results.NotFound();
+    }
+    categories.Remove(category);
+    return Results.Ok(category);
 });
 
 app.MapPut("/categories/{id}", (int id, Categories category) =>
@@ -446,6 +566,15 @@ app.MapPut("/categories/{id}", (int id, Categories category) =>
     }
     categories[categoryIndex] = category;
     return Results.Ok();
+});
+
+// Comments Endpoints
+
+app.MapPost("/comments", (Comments comment) =>
+{
+    comment.Id = comments.Max(c => c.Id) + 1;
+    comments.Add(comment);
+    return comment;
 });
 
 app.MapPut("/comments/{id}", (int id, Comments comment) =>
@@ -475,15 +604,22 @@ app.MapDelete("/comments/{id}", (int id) =>
     return Results.Ok(comment);
 });
 
-app.MapDelete("/categories/{id}", (int id) =>
+
+app.MapGet("/reactions", () =>
 {
-    Categories category = categories.FirstOrDefault(c => c.Id == id);
-    if (category == null)
+    return reactions;
+});
+
+app.MapGet("/reactions/{id}", (int id) =>
+{
+    Reactions reaction = reactions.FirstOrDefault(r => r.Id == id);
+
+    if (reaction == null)
     {
         return Results.NotFound();
     }
-    categories.Remove(category);
-    return Results.Ok(category);
+
+    return Results.Ok(reaction);
 });
 
 // PostReaction Endpoints:
