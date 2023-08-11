@@ -213,6 +213,40 @@ List<Posts> posts = new List<Posts>
     }
 };
 
+List<PostReactions> postReactions = new List<PostReactions>
+{
+    new PostReactions()
+    {
+        Id = 1,
+        UserId = 1,
+        ReactionId = 1,
+        PostId = 1,
+    },
+    new PostReactions()
+    {
+        Id = 2,
+        UserId = 2,
+        ReactionId = 2,
+        PostId = 2,
+    },
+    new PostReactions()
+    {
+        Id = 3,
+        UserId = 3,
+        ReactionId = 3,
+        PostId = 3,
+    },
+    new PostReactions()
+    {
+        Id = 4,
+        UserId = 4,
+        ReactionId = 4,
+        PostId = 4,
+    },
+
+};
+
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -226,6 +260,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
 
 // api calls for Post
 app.MapGet("/posts", () => 
@@ -258,7 +294,9 @@ app.MapDelete("/posts/{id}", (int id) =>
     {
         return Results.NotFound();
     }
-
+    postReactions.RemoveAll(postReaction => postReaction.PostId == id);
+    comments.RemoveAll(comment => comment.PostId == id);
+    //PostTagList.RemoveAll(postTag => postTag.PostId == id);
     posts.Remove(postToDelete);
     return Results.Ok();
 
@@ -328,7 +366,22 @@ app.MapDelete("/users/{id}", (int id) =>
     return Results.Ok(users);
 });
 
-app.UseHttpsRedirection();
+app.MapDelete("/users/connections/{id}", (int id) =>
+{
+    Users user = users.FirstOrDefault(user => user.Id == id);
+    if (user == null)
+    {
+        return Results.NotFound();
+    }
+
+    posts.RemoveAll(post => post.UserId == id);
+    subscriptions.RemoveAll(subscription => subscription.AuthorId == id);
+    comments.RemoveAll(comment => comment.AuthorId == id);
+    postReactions.RemoveAll(postReaction => postReaction.UserId == id);
+    users.Remove(user);
+    return Results.Ok(users);
+});
+
 app.MapGet("/users/active", () =>
 {
     List<Users> active = users.Where(user => user.Active == true).ToList();
@@ -431,6 +484,47 @@ app.MapDelete("/categories/{id}", (int id) =>
     }
     categories.Remove(category);
     return Results.Ok(category);
+});
+
+// PostReaction Endpoints:
+app.MapDelete("/postReactions/{id}", (int id) =>
+{
+    PostReactions postReaction = postReactions.FirstOrDefault(pr => pr.Id == id);
+    if (postReaction == null)
+    {
+        return Results.NotFound();
+    }
+    postReactions.Remove(postReaction);
+    return Results.Ok(postReactions);
+});
+
+app.MapGet("/postReactions", () =>
+{
+    return postReactions;
+});
+
+app.MapPost("/postReactions", (PostReactions postReaction) =>
+{
+    postReaction.Id = postReactions.Max(pr => pr.Id) + 1;
+    postReactions.Add(postReaction);
+    return Results.Ok(postReactions);
+});
+
+app.MapPut("/users/{id}", (int id, PostReactions postReaction) =>
+{
+    PostReactions prToUpdate = postReactions.FirstOrDefault(pr => pr.Id == id);
+    int prIndex = postReactions.IndexOf(prToUpdate);
+
+    if (prToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+    if (id != postReaction.Id)
+    {
+        return Results.BadRequest();
+    }
+    postReactions[prIndex] = postReaction;
+    return Results.Ok(postReactions);
 });
 
 app.Run();
