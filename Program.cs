@@ -606,6 +606,7 @@ app.MapDelete("/categories/{id}", (int id) =>
     return Results.Ok(category);
 });
 
+
 app.MapPut("/categories/{id}", (int id, Categories category) =>
 {
     Categories categoryToUpdate = categories.FirstOrDefault(c => c.Id == id);
@@ -622,16 +623,6 @@ app.MapPut("/categories/{id}", (int id, Categories category) =>
     return Results.Ok();
 });
 
-app.MapDelete("/categories/{id}", (int id) =>
-{
-    Categories category = categories.FirstOrDefault(c => c.Id == id);
-    if (category == null)
-    {
-        return Results.NotFound();
-    }
-    categories.Remove(category);
-    return Results.Ok(category);
-});
 
 // COMMENTS ENDPOINTS
 
@@ -758,7 +749,7 @@ app.MapPost("/postReactions", (PostReactions postReaction) =>
     return Results.Ok(postReactions);
 });
 
-app.MapPut("/users/{id}", (int id, PostReactions postReaction) =>
+app.MapPut("/users/postreactions/{id}", (int id, PostReactions postReaction) =>
 {
     PostReactions prToUpdate = postReactions.FirstOrDefault(pr => pr.Id == id);
     int prIndex = postReactions.IndexOf(prToUpdate);
